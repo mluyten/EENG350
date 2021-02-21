@@ -4,6 +4,8 @@
 
 **Assignment 2 Code for Reference:** Two_Encoders_Read.ino
 
+**4.6:** Step_Response.ino <-- only an outline right now, most likely doesn't work.
+
 "GitHub should have a readme.md that describes the purpose of the repository and its organization."
 
 "Your code for the miniproject should be in the repository in a folder named Mini Project, with it’s own readme.md, and further file organization that makes it easy to find the different types of code.
