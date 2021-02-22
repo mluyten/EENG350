@@ -8,6 +8,10 @@ import serial
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
 from CVforPi import *
 
+cam = computer_vision()
+
+quadDict = {'NW': 1, 'NE': 2, 'SW': 3, 'SE': 4, 'NA': 5}
+
 # Modify this if you have a different sized Character LCD
 lcd_columns = 16
 lcd_rows = 2
@@ -52,11 +56,9 @@ def readPosition():
         posArray = readByteArray(1)
         pos = posArray[0] + 256 * posArray[1]
         lcd.color = [0,0,100]
-        
-        arucoDetect(resize(convertToGray(takeImage())), True) 
-        
-        lcd.message = "Counts: " + str(pos) + "       "
-        time.sleep(0.001)
+        quad = cam.getArucoQuadrant()
+        lcd.message = "Set: " + str(quadDict[quad]) + "      \nPosition: " + str(pos) + "       "
+        time.sleep(0.01)
         
 runThread = False
 
