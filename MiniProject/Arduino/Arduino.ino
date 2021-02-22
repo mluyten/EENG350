@@ -1,11 +1,14 @@
 #include <Wire.h>
+#include <Encoder.h>
 #define SLAVE_ADDRESS 0x04
 byte data[32];
-byte pos[3] = {0, 0, 0};
+byte posArray[3] = {2, 0, 0};
 
 int pos = 0;
 int i = 0;
 int j = 0;
+
+Encoder myEnc(2,3);
 
 void setup() {
   Serial.begin(115200); // start serial for output
@@ -18,7 +21,10 @@ void setup() {
 }
 
 void loop() {
-  delay(1)
+  pos = myEnc.read();
+  posArray[1] = pos & 255;
+  posArray[2] = pos / 256;
+  delay(1);
 }
  
 // callback for received data
@@ -41,6 +47,6 @@ void sendData() {
     else {
       j++;
     }
-    Wire.write(data[j]);
+    Wire.write(posArray[j]);
   }
 }

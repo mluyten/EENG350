@@ -6,6 +6,7 @@ import busio
 import threading
 import serial
 import adafruit_character_lcd.character_lcd_rgb_i2c as character_lcd
+from CVforPi import *
 
 # Modify this if you have a different sized Character LCD
 lcd_columns = 16
@@ -51,6 +52,9 @@ def readPosition():
         posArray = readByteArray(1)
         pos = posArray[0] + 256 * posArray[1]
         lcd.color = [0,0,100]
+        
+        arucoDetect(resize(convertToGray(takeImage())), True) 
+        
         lcd.message = "Counts: " + str(pos) + "       "
         time.sleep(0.001)
         
@@ -58,6 +62,7 @@ runThread = False
 
 while True:
     print("Reading Wheel Position...")
+    lcd.clear()
     runThread = True
     thread = threading.Thread(target=readPosition)
     thread.start()
