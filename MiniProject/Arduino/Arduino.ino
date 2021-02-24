@@ -3,15 +3,15 @@
 #define SLAVE_ADDRESS 0x04
 
 /* Name: Group 6 | EENG350 | Mini Project: 4.6
- 
- Purpose: Step response experiment
- 
- How to Use:
- 
- NOTE: This hasn't been tested at all and probably doesn't even work right now. 
- I just ran out of time and can't work on it anymore tonight.
- 
- */
+
+  Purpose: Step response experiment
+
+  How to Use:
+
+  NOTE: This hasn't been tested at all and probably doesn't even work right now.
+  I just ran out of time and can't work on it anymore tonight.
+
+*/
 
 int sampleRate = 5; // milliseconds
 int desiredPWM = 255;
@@ -23,10 +23,11 @@ int m1SpeedPin = 9;     // voltage
 
 byte data[32];
 byte posArray[3] = {
-  2, 0, 0};
+  2, 0, 0
+};
 
 int thetaCurrent = 0;
-int thetaSet = 800;
+int thetaSet = 2700;
 double angularVelocity = 0.0;
 int cmd = 0;
 boolean cmdReceived = false;
@@ -35,14 +36,12 @@ int j = 0;
 
 
 float u = 0.0;  //PI Output
-//float Kp = 0.0871, Kd = 0, Ki = 0.00291;                    //Controller parameters
+float Kp = 0.1071, Kd = 0, Ki = 0.00291;                    //Controller parameters
 //float Kp = 0.25701, Kd = 0, Ki = 0.00291;
-float Kp = 0.3, Kd = 0, Ki = 0.00291;
 float I = 0.0, thetaDelta = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
-float voltageToDuty = 255 / 7.4;
 unsigned long Ts = 0, Tc = millis();
 
-Encoder myEnc(2,3);
+Encoder myEnc(2, 3);
 
 void setup() {
   Serial.begin(115200); // start serial for output
@@ -66,37 +65,55 @@ void loop() {
   unsigned long timeBefore = micros();
 
   // Read encoder and stuff
-  thetaCurrent = abs(myEnc.read() % 3200);
+  thetaCurrent = myEnc.read();
+  
+  if (thetaCurrent < 0) {
+   thetaCurrent = abs(thetaCurrent + 3200);
+  }
+  else {
+    thetaCurrent = thetaCurrent % 3200;
+  }
+  
   posArray[1] = thetaCurrent & 255;
   posArray[2] = thetaCurrent / 256;
   //angularVelocity = ((double) (thetaCurrent - lastThetaCurremt)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
 
   thetaDelta = thetaSet - thetaCurrent;
   
-  if (thetaDelta < 0) {
-    thetaDelta = 3200 + thetaDelta;
+  if (thetaDelta > 1600) {
+    thetaDelta = thetaDelta - 3200;
   }
+  else if (thetaDelta < -1600) {
+    thetaDelta = thetaDelta + 3200;
+  }
+
+  if ((thetaDelta > 5) || (thetaDelta < -5)) {
+
+    I = I + sampleRate * thetaDelta;                          // Define the integral term
   
-  I = I + sampleRate * thetaDelta;                          // Define the integral term
-
-  u = Kp * thetaDelta + Ki * 2;            // Put it all together to get the resulting position change
-  analogWrite(m1SpeedPin, u);   // Output this result to the motor
-  if (u < 0) {
-    digitalWrite(m1DirPin, LOW);
-  } else {
-    digitalWrite(m1DirPin, HIGH);
+    u = Kp * thetaDelta + Ki * 2;            // Put it all together to get the resulting position change
+    analogWrite(m1SpeedPin, u + 15);   // Output this result to the motor
+  
+    Serial.print(u);
+    Serial.print("\t");
+    Serial.println(thetaDelta);
+    
+    if (u < 0) {
+      digitalWrite(m1DirPin, HIGH);
+    } else {
+      digitalWrite(m1DirPin, LOW);
+    }
   }
-
-  Serial.print(u);
-  Serial.print("\t");
-  Serial.println(thetaDelta);
+  else {
+    analogWrite(m1SpeedPin, 0);
+  }
 
   unsigned long timeNow = micros();
   unsigned long timeMain = timeNow - timeBefore; // total time spent doing things
 
   if ( timeMain > (sampleRate * pow(10, 3)) ) {
     Serial.println("Main takes too long.");
-  } 
+  }
   else {
     while ( micros() < timeNow + (sampleRate * pow(10, 3) - timeMain) ); // take a sample every 5ms = 5000us
 
@@ -106,16 +123,16 @@ void loop() {
 void make_step() { // Sets motor speed to 0 before 1 sec, then a positive speed after 1 sec
   if (millis() < 1000) {
     analogWrite(m1SpeedPin, 0);
-  } 
+  }
   else {
     analogWrite(m1SpeedPin, desiredPWM);
   }
 }
 
 // callback for received data
-void receiveData(int byteCount){
+void receiveData(int byteCount) {
   i = 0;
-  while(Wire.available()) {
+  while (Wire.available()) {
     data[i] = Wire.read();
     i++;
   }
@@ -140,5 +157,3 @@ void sendData() {
     Wire.write(posArray[j]);
   }
 }
-
-
