@@ -10,7 +10,7 @@ from CVforPi import *
 
 cam = computer_vision()
 
-quadDict = {'NW': 1, 'NE': 2, 'SW': 3, 'SE': 4, 'NA': 5}
+quadDict = {'NW': 1, 'NE': 2, 'SW': 3, 'SE': 4, 'NA': 0}
 
 # Modify this if you have a different sized Character LCD
 lcd_columns = 16
@@ -52,11 +52,15 @@ def readByteArray(reg):
         return -1
 
 def readPosition():
+    quad = 'NA'
     while(runThread):
-        posArray = readByteArray(1)
+        posArray = readByteArray(255)
         pos = posArray[0] + 256 * posArray[1]
         lcd.color = [0,0,100]
-        quad = cam.getArucoQuadrant()
+        newQuad = cam.getArucoQuadrant()
+        if newQuad != quad:
+            quad = newQuad
+            writeByteArray([quadDict[quad]])
         lcd.message = "Set: " + str(quadDict[quad]) + "      \nPosition: " + str(pos) + "       "
         time.sleep(0.01)
         

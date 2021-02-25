@@ -27,12 +27,11 @@ byte posArray[3] = {
 };
 
 int thetaCurrent = 0;
-int thetaSet = 2700;
+int thetaSet = 0;
 double angularVelocity = 0.0;
-int cmd = 0;
-boolean cmdReceived = false;
 int i = 0;
 int j = 0;
+boolean encReset = true;
 
 
 float u = 0.0;  //PI Output
@@ -68,7 +67,7 @@ void loop() {
   thetaCurrent = myEnc.read();
   
   if (thetaCurrent < 0) {
-   thetaCurrent = abs(thetaCurrent + 3200);
+   thetaCurrent = abs(thetaCurrent + 3200) % 3200;
   }
   else {
     thetaCurrent = thetaCurrent % 3200;
@@ -88,7 +87,8 @@ void loop() {
   }
 
   if ((thetaDelta > 5) || (thetaDelta < -5)) {
-
+    encReset = false;
+    
     I = I + sampleRate * thetaDelta;                          // Define the integral term
   
     u = Kp * thetaDelta + Ki * 2;            // Put it all together to get the resulting position change
@@ -105,6 +105,9 @@ void loop() {
     }
   }
   else {
+    if (!encReset) {
+      myEnc.write(thetaCurrent);
+    }
     analogWrite(m1SpeedPin, 0);
   }
 
@@ -138,9 +141,17 @@ void receiveData(int byteCount) {
   }
   i--;
 
-  if ((data[1] != cmd) && (data[1] != 0)) {
-    cmdReceived = true;
-    cmd = data[1];
+  if (data[1] == 1) {
+    thetaSet = 800;
+  }
+  else if (data[1] == 2) {
+    thetaSet = 1600;
+  }
+  else if (data[1] == 3) {
+    thetaSet = 2400;
+  }
+  else if (data[1] == 4) {
+    thetaSet = 0;
   }
 
 }
