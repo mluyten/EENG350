@@ -35,8 +35,8 @@ boolean encReset = true;
 
 
 float u = 0.0;  //PI Output
-float Kp = 0.1071, Kd = 0, Ki = 0.00291;                    //Controller parameters
-//float Kp = 0.25701, Kd = 0, Ki = 0.00291;
+//float Kp = 0.1071, Kd = 0, Ki = 0.00291;                    //Controller parameters
+float Kp = 0.12638, Kd = 0, Ki = 0.0061089;
 float I = 0.0, thetaDelta = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 unsigned long Ts = 0, Tc = millis();
 
@@ -87,22 +87,23 @@ void loop() {
   }
 
   if ((thetaDelta > 5) || (thetaDelta < -5)) {
+    if (thetaDelta < 0) {
+      digitalWrite(m1DirPin, HIGH);
+    } else {
+      digitalWrite(m1DirPin, LOW);
+    }
+    
     encReset = false;
     
-    I = I + sampleRate * thetaDelta;                          // Define the integral term
+    I = I + sampleRate * abs(thetaDelta);                          // Define the integral term
   
-    u = Kp * thetaDelta + Ki * 2;            // Put it all together to get the resulting position change
+    u = Kp * abs(thetaDelta) + Ki * 2;            // Put it all together to get the resulting position change
     analogWrite(m1SpeedPin, u + 15);   // Output this result to the motor
   
     Serial.print(u);
     Serial.print("\t");
     Serial.println(thetaDelta);
     
-    if (u < 0) {
-      digitalWrite(m1DirPin, HIGH);
-    } else {
-      digitalWrite(m1DirPin, LOW);
-    }
   }
   else {
     if (!encReset) {
