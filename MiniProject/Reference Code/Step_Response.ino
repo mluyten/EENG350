@@ -1,6 +1,7 @@
 /* Name: Group 6 | EENG350 | Mini Project: 4.6
 
-   Purpose: Step response experiment
+   Purpose: Step response experiment (old).
+   Working step response code can be found in MP_Final_Arduino.ino
 
 */
 
