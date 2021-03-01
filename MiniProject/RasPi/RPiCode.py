@@ -1,3 +1,7 @@
+# Group 6 | EENG350 | Mini Project RasPi Integration Code
+# Purpose: Runs CV program and tells the Arduino the desired angle. 
+#          Updates the desired and current position of the wheel on the LCD display.
+
 import smbus2
 import time
 import time
