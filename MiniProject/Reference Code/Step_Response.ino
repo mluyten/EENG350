@@ -2,11 +2,6 @@
 
    Purpose: Step response experiment
 
-   How to Use:
-
-   NOTE: This hasn't been tested at all and probably doesn't even work right now. 
-   I just ran out of time and can't work on it anymore tonight.
-
 */
 
 int sampleRate = 5; // 5 milliseconds
