@@ -9,3 +9,5 @@ Step_Response.ino: *Original step response code (now part of MP_Final_Arduino).*
 
 Two_Encoders_Read.ino: *Reference encoder code from Assignment 2. Reads two breadboard encoders and outputs their positional and angular velocities.*
 
+4.7: *Subfolder containing the PID block diagram, step response spreadsheet, and simulated control system code in MATLAB.*
+
