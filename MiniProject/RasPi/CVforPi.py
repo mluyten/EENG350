@@ -1,7 +1,11 @@
+# Group 6 | EENG350 | Mini Project Computer Vision Code
+# Purpose: Detects an Aruco marker and determines which corner it is in
+
 import time
 import cv2
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+
 class computer_vision():
     def __init__(self):
         self.camera = PiCamera()
