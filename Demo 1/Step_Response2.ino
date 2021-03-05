@@ -58,10 +58,10 @@ void loop() {
 
   angularVelocity1 = ((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
   angularVelocity2 = ((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
-  
-  rotationalVelocity = ( (double) radius*(angularVelocity1 - angularVelocity2)/wheelbase );
-  forwardVelocity = ( (double) radius*(angularVelocity1 + angularVelocity2)/wheelbase );
-  
+
+  rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
+  forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / wheelbase );
+
   lastThetaCurrent1 = thetaCurrent1;
   lastThetaCurrent2 = thetaCurrent2;
 
@@ -73,32 +73,33 @@ void loop() {
   }
   else {
     while ( micros() < timeNow + (sampleRate * pow(10, 3) - timeMain) ); // wait to take a sample exactly every 5ms = 5000us
-    Serial.print(angularVelocity1);
+    Serial.print(timeNow); // current time in micros
     Serial.print("\t");
-    Serial.println(angularVelocity2);
+    Serial.println(forwardVelocity); // sub me with rotationalVelocity as needed
   }
+}
 
 
-  void make_step_rho() { // Robot forward step response
-    if (millis() < 1000) {
-      analogWrite(m1SpeedPin, 0);
-      analogWrite(m2SpeedPin, 0);
-    } else {
-      analogWrite(m1SpeedPin, desiredPWM);
-      digitalWrite(m1DirPin, HIGH); // forward left
-      analogWrite(m2SpeedPin, desiredPWM);
-      digitalWrite(m2DirPin, LOW); // forward right
-    }
+void make_step_rho() { // Robot forward step response
+  if (millis() < 1000) {
+    analogWrite(m1SpeedPin, 0);
+    analogWrite(m2SpeedPin, 0);
+  } else {
+    analogWrite(m1SpeedPin, desiredPWM);
+    digitalWrite(m1DirPin, HIGH); // forward left
+    analogWrite(m2SpeedPin, desiredPWM);
+    digitalWrite(m2DirPin, LOW); // forward right
   }
+}
 
-  void make_step_phi() { // Robot rotate counterclockwise step response
-    if (millis() < 1000) {
-      analogWrite(m1SpeedPin, 0);
-      analogWrite(m2SpeedPin, 0);
-    } else {
-      analogWrite(m1SpeedPin, desiredPWM);
-      digitalWrite(m1DirPin, HIGH); // forward left
-      analogWrite(m2SpeedPin, desiredPWM);
-      digitalWrite(m2DirPin, HIGH); // reverse right
-    }
+void make_step_phi() { // Robot rotate counterclockwise step response
+  if (millis() < 1000) {
+    analogWrite(m1SpeedPin, 0);
+    analogWrite(m2SpeedPin, 0);
+  } else {
+    analogWrite(m1SpeedPin, desiredPWM);
+    digitalWrite(m1DirPin, HIGH); // forward left
+    analogWrite(m2SpeedPin, desiredPWM);
+    digitalWrite(m2DirPin, HIGH); // reverse right
   }
+}
