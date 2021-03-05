@@ -33,7 +33,7 @@ double forwardVelocity = 0.0;
 
 // Encoder setup ---------------------------------------------------------
 Encoder myEnc1(1, 2); // left
-Encoder myEnc2 (3, 4);// right
+Encoder myEnc2(3, 4);// right
 
 void setup() {
   Serial.begin(9600);
@@ -53,8 +53,8 @@ void loop() {
 
   make_step_rho(); // Step response forward, replace with make_step_phi() as needed
 
-  thetaCurrent1 = myEnc1;
-  thetaCurrent2 = myEnc2;
+  thetaCurrent1 = myEnc1.read();
+  thetaCurrent2 = myEnc2.read();
 
   angularVelocity1 = ((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
   angularVelocity2 = ((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
