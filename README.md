@@ -1,2 +1,3 @@
 # Systems-Exploration-Engineering-and-Design-Lab
-"The GitHub should have a readme.md that describes the purpose of the repository and its organization"
+
+This GitHub is for the development of an autonomously navigating robot for the Colorado School of Mines SEED Lab Group 6. Included in this respository are folders for the Mini Project, Demo 1, Demo 2, and the Final Demo.

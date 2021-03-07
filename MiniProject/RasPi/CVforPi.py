@@ -1,39 +1,46 @@
+# Group 6 | EENG350 | Mini Project Computer Vision Code
+# Purpose: Detects an Aruco marker and determines which corner it is in
+
 import time
 import cv2
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+#This was defined as a class in order to make it easier to access the functions from the other Python Files
 class computer_vision():
     def __init__(self):
         self.camera = PiCamera()
-
+        self.setWhiteBalance()
+        #Init set up that tells the pi what camera to use and run the white balance, only runs at set up
     def takeImage(self):
         # initialize the camera and grab a reference to the raw camera capture
         rawCapture = PiRGBArray(self.camera)
         # allow the camera to warmup
         time.sleep(0.1)
         # grab an image from the camera
-        print("Capturing Image...")
+        #print("Capturing Image...")
         try:
-            camera.capture(rawCapture, format="bgr")
+            self.camera.capture(rawCapture, format="bgr")
             image = rawCapture.array
+            return image
         except:
             print("Failed to capture")
             # display the image on screen and wait for a keypress
-            cv2.imshow("Image", image)
-            cv2.waitKey(0)
-        return image
-
-    def convertToGray(image):
+        #The above code was given to us from the professors of SEED Lab
+        
+    def convertToGray(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return gray
-
-    def resize(gray):
+        #This function when called converts the image from ghe BGR color space to Grayscale, need to do this because
+        #an image is way to big to process if it is in the BGR color space.
+        
+    def resize(self, gray):
         resizeImg = cv2.resize(gray, None, fx = 0.5, fy = 0.5, interpolation = cv2.INTER_AREA)
         return resizeImg
-
-    def arucoDetect(resize, showImage=False):
+        #This function takes the large grayscale image and scales down by half
+        
+    def arucoDetect(self, resize, showImage=False):
         arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
-        image = cv2.imread(resize)
+        image = resize
         # verify that the supplied ArUCo tag exists and is supported by
         # OpenCV
         arucoParams = cv2.aruco.DetectorParameters_create()
@@ -69,36 +76,50 @@ class computer_vision():
             cv2.putText(image, str(markerID),
                 (topLeft[0], topLeft[1] - 15), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
-            print("[INFO] ArUco marker ID: {}".format(markerID))
+            #print("[INFO] ArUco marker ID: {}".format(markerID))
 
             h, w = image.shape
             if (cX < int(w / 2)) and cY < int(h / 2):
                 arucoLocation = "NW"
-                print(arucoLocation)
             elif (cX > int(w / 2) and cY < int(h / 2)):
                 arucoLocation = "NE"
-                print(arucoLocation)
             elif (cX < int(w / 2) and cY > int(h / 2)):
                 arucoLocation = "SW"
-                print(arucoLocation)
             else:
                 arucoLocation = "SE"
-                print(arucoLocation)
             if showImage:
                 cv2.imshow(image)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
+                #print(arucoLocation)
+            return arucoLocation 
         except:
-            print("No Aruco Detected")
-    #This is what needs to be called
+            #print("No Aruco Detected")
+            return "NA"
+    #There is a lot of comments that live within this function already, but I would like to expand on that.
+    #Essentially we start out by determining if there is an AruCo marker in the image. It does edge detection and
+    #checks to see if the Aruco in the image is within any of the dictionaries supplied. I currently only have one 
+    #dictionary supplied in order help cut down on the time the program needs to check to see if it is supplied, can be 
+    #expanded at any point though. A lot of this code comes from https://www.pyimagesearch.com/2020/12/21/detecting-aruco-markers-with-opencv-and-python/
+    #However there was some modifying done in order to help this work faster. I removed the function that shows the image for this time, but it can be done whenever needed
+    #by calling the function and setting it to show image true. I also made it so if it doesn't find an aruco marker, it doesn't fail, like the code given at the website.
+    #I also make it so it works with images that are spit out from the camera, rather than saved images, this will help keep us from filling up the memory on the pi.
+    #I also then adjusted it using the precalculated center of the AruCo marker and compared that to the total size of the image and used that for the dterminations of what
+    #quadrant the image is in.
+  
     def getArucoQuadrant(self):
-        arucoDetect(resize(convertToGray(takeImage())), True)
-
+        return self.arucoDetect(self.resize(self.convertToGray(self.takeImage())))
+         #This function is the one that is called within the file that communicates with the Arduino. It is kinda messy so I have set it up so the call is easy
+         #within the greater function of the project.
     def setWhiteBalance(self):
         g1 = self.camera.awb_gains
-        sleep(2)
+        time.sleep(0.5)
         g2 = self.camera.awb_gains
-        sleep (2)
+        time.sleep(0.5)
         g3 = self.camera.awb_gains
         self.camera.awb_mode = 'off'
-        self.camera.awb_gains = (g1 + g2 + g3) / 3
+        gainAvg = (g1[0]/3 + g2[0]/3 + g3[0]/3, g1[1]/3 + g2[1]/3 + g3[1]/3)
+        self.camera.awb_gains = gainAvg
+        #This function is run whenever we initialize the project. It takes 3 images pretty close together and then averages the gains
+        #from them in order to set the white balance so we don't have any issues when it comes to stray colors and odditites in our 
+        #pictures.
