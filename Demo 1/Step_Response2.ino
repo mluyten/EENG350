@@ -2,7 +2,7 @@
 
 /* Name: Group 6 | EENG350 | Demo 1 Step Response
    Purpose: Step response experiment
-   Note: Left wheel is 1, right wheel is 2.
+   Note: When viewed from the front, left wheel is 1, right wheel is 2. driveModePin is 4 on the motor shield, 5 on the Teensy
 */
 
 int sampleRate = 5;      // 5 milliseconds
@@ -32,8 +32,8 @@ double rotationalVelocity = 0.0;
 double forwardVelocity = 0.0;
 
 // Encoder setup ---------------------------------------------------------
-Encoder myEnc1(1, 2); // left
-Encoder myEnc2(3, 4);// right
+Encoder myEnc1(1, 2); // wheel 1 (left)
+Encoder myEnc2(3, 4); // wheel 2 (right)
 
 void setup() {
   Serial.begin(9600);
@@ -54,7 +54,7 @@ void loop() {
   make_step_rho(); // Step response forward, replace with make_step_phi() as needed
 
   thetaCurrent1 = myEnc1.read();
-  thetaCurrent2 = myEnc2.read();
+  thetaCurrent2 = -1*myEnc2.read(); // encoder 2 is running in reverse. Switch polarity of counts.
 
   angularVelocity1 = ((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
   angularVelocity2 = ((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.001 * sampleRate);
