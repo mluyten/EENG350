@@ -111,3 +111,48 @@ class computer_vision():
         # This function is run whenever we initialize the project. It takes 3 images pretty close together and then averages the gains
         # from them in order to set the white balance so we don't have any issues when it comes to stray colors and odditites in our
         # pictures.
+    def focalLength(self, resize):
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        image = resize
+        # verify that the supplied ArUCo tag exists and is supported by
+        # OpenCV
+        arucoParams = cv2.aruco.DetectorParameters_create()
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict,
+                                                           parameters=arucoParams)
+        try:
+            # verify *at least* one ArUco marker was detected
+            if len(corners) > 0:
+                # flatten the ArUco IDs list
+                ids = ids.flatten()
+                # loop over the detected ArUCo corners
+                for (markerCorner, markerID) in zip(corners, ids):
+                    # extract the marker corners (which are always returned in
+                    # top-left, top-right, bottom-right, and bottom-left order)
+                    corners = markerCorner.reshape((4, 2))
+                    (topLeft, topRight, bottomRight, bottomLeft) = corners
+                    # convert each of the (x, y)-coordinate pairs to integers
+                    topRight = (int(topRight[0]), int(topRight[1]))
+                    bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+                    bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+                    topLeft = (int(topLeft[0]), int(topLeft[1]))
+
+            cX = int((topLeft[0] + bottomRight[0]) / 2.0)
+            cY = int((topLeft[1] + bottomRight[1]) / 2.0)
+
+            # print("[INFO] ArUco marker ID: {}".format(markerID))
+
+            h, w = image.shape
+
+            arucoHeight = 100  # in mm
+            measuredDistance = input("Enter Actual Distance to Marker in mm: ")
+            realFocal = (((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2) * measuredDistance/ arucoHeight
+            return (realFocal)
+        except:
+            #print("No Aruco Detected")
+            return "NA"
+    def findFocalLength(self):
+        t1 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
+        t2 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
+        t3 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
+        focalValue = (t1 + t2 + t3) / 3
+        print(focalValue)
