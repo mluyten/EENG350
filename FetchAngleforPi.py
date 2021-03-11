@@ -152,7 +152,9 @@ class computer_vision():
             return "NA"
     def findFocalLength(self):
         t1 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
+        time.sleep(15)
         t2 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
+        time.sleep(15)
         t3 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
         focalValue = (t1 + t2 + t3) / 3
         print(focalValue)
