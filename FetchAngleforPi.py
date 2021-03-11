@@ -4,9 +4,8 @@ import math
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
-
 # This was defined as a class in order to make it easier to access the functions from the other Python Files
-class computer_vision():
+class ComputerVision():
     def __init__(self):
         self.camera = PiCamera()
         self.setWhiteBalance()
@@ -70,16 +69,16 @@ class computer_vision():
             # print("[INFO] ArUco marker ID: {}".format(markerID))
 
             h, w = image.shape
-            focalLength = 3.60  # focal length in mm
+            focalLength = 912.916
             arucoHeight = 100  # in mm
             pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2
             realDistance = focalLength * arucoHeight / pixelHeight
             if cX < w / 2:
-                width = focalLength * realDistance / ((w / 2) - cX)
-                return (-1 * math.atan(width / realDistance))
+                width = realDistance * ((w / 2) - cX) / focalLength
+                return math.degrees(-1 * math.atan(width / realDistance))
             else:
-                width = focalLength * realDistance / (cX - (w / 2))
-                return (math.atan(width / realDistance))
+                width = realDistance * (cX - (w / 2)) / focalLength
+                return math.degrees(math.atan(width / realDistance))
         except:
             #print("No Aruco Detected")
             return "NA"
@@ -144,17 +143,21 @@ class computer_vision():
             h, w = image.shape
 
             arucoHeight = 100  # in mm
-            measuredDistance = input("Enter Actual Distance to Marker in mm: ")
-            realFocal = (((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2) * measuredDistance/ arucoHeight
+            measuredDistance = float(input("Enter Actual Distance to Marker in mm: "))
+            realFocal = (((bottomRight[1] - topRight[1]) + (bottomLeft[1] - topLeft[1])) / 2) * measuredDistance / arucoHeight
             return (realFocal)
         except:
             #print("No Aruco Detected")
             return "NA"
     def findFocalLength(self):
         t1 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
-        time.sleep(15)
+        time.sleep(1)
         t2 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
-        time.sleep(15)
+        time.sleep(1)
         t3 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
         focalValue = (t1 + t2 + t3) / 3
         print(focalValue)
+        
+cv = ComputerVision()
+while True:
+    print(cv.getArucoAngle())
