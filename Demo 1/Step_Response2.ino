@@ -1,3 +1,4 @@
+#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
 /* Name: Group 6 | EENG350 | Demo 1 Step Response
@@ -88,7 +89,7 @@ void make_step_rho() { // Robot forward step response
     analogWrite(m1SpeedPin, desiredPWM);
     digitalWrite(m1DirPin, HIGH); // forward left
     analogWrite(m2SpeedPin, desiredPWM);
-    digitalWrite(m2DirPin, LOW); // forward right
+    digitalWrite(m2DirPin, HIGH); // forward right
   }
 }
 
@@ -100,6 +101,6 @@ void make_step_phi() { // Robot rotate counterclockwise step response
     analogWrite(m1SpeedPin, desiredPWM);
     digitalWrite(m1DirPin, HIGH); // forward left
     analogWrite(m2SpeedPin, desiredPWM);
-    digitalWrite(m2DirPin, HIGH); // reverse right
+    digitalWrite(m2DirPin, LOW); // reverse right
   }
 }
