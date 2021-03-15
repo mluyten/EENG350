@@ -40,19 +40,20 @@ double forwardVelocity = 0.0;
 // Forward velocity PI controller variables ---------------------------------
 float desiredForward = 0.0, deltaForward = 0.0;
 float v_bar = 0.0;  //PI Output
-float KpForward = 0.01213617933710021, KiForward = 0.0106808966855011;
+//float KpForward = 0.05213617933710021, KiForward = 0.0506808966855011;
+float KpForward = 0.0085398, KiForward = 0.055196;
 float IForward = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Rotational velocity PI controller variables ---------------------------------
 float desiredRotational = 0.0, deltaRotational = 0.0;
 float delta_v = 0.0;  //PI Output
-float KpRotational = 0.027802, KiRotational = 0.13901;
+float KpRotational = 0.014802, KiRotational = 0.13901;
 float IRotational = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Angle and Position controller variables ----------------------------------
-float desiredPosition = 12.0, deltaPosition = 0.0, currentPosition = 0.0;
+float desiredPosition = 36.0, deltaPosition = 0.0, currentPosition = 0.0;
 float desiredAngle = 0.0, deltaAngle = 0.0, currentAngle = 0.0;
-float KpPos = 0.3, KpAng = 0.05;
+float KpPos = 0.5, KpAng = 0.01;
 
 // Motor Voltage Calcs-----------------------------------------------------
 double v_a1 = (v_bar + delta_v) / 2;
@@ -102,9 +103,9 @@ void loop() {
     rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
     forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 );
     velocityChanged = false;
-    Serial.print(deltaPosition);
-    Serial.print("\t");
-    Serial.println(deltaForward);
+    //Serial.print(deltaPosition);
+    //Serial.print("\t");
+    //Serial.println(deltaForward);
   }
 
   currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * 2 * radius / 3200 / 2;
@@ -115,7 +116,7 @@ void loop() {
   desiredForward = KpPos * abs(deltaPosition);
   desiredAngle = KpAng * abs(deltaAngle);
   
-  if (desiredForward > 18)
+  if (desiredForward > 10)
     desiredForward = 18;
 
   if (desiredAngle > 5)
@@ -136,13 +137,23 @@ void loop() {
   analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
   analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
   if (v_a1 > 0) {
-    digitalWrite(m1DirPin, HIGH);
+    if (deltaPosition >= 0) 
+      digitalWrite(m1DirPin, HIGH);
+    else
+      digitalWrite(m1DirPin, LOW);
   } else {
-    digitalWrite(m1DirPin, LOW);
+    if (deltaPosition >= 0)
+      digitalWrite(m1DirPin, LOW);
+    else 
+      digitalWrite(m1DirPin, HIGH);
   }
   if (v_a2 > 0) {
-    digitalWrite(m2DirPin, HIGH);
+    if (deltaPosition >= 0) 
+      digitalWrite(m2DirPin, HIGH);
+    else
+      digitalWrite(m2DirPin, LOW);
   } else {
+    
     digitalWrite(m2DirPin, LOW);
   }
 
