@@ -27,10 +27,12 @@ int m2SpeedPin = 10;
 
 // Distance calculation variables -------------------------------------------------
 int thetaCurrent1 = 0;
+int deltaTheta1 = 0;
 int lastThetaCurrent1 = 0;
 double angularVelocity1 = 0.0;
 
 int thetaCurrent2 = 0;
+int deltaTheta2 = 0;
 int lastThetaCurrent2 = 0;
 double angularVelocity2 = 0.0;
 
@@ -86,14 +88,16 @@ void loop() {
   thetaCurrent2 = myEnc2.read();
 
   if (lastThetaCurrent1 != thetaCurrent1) {
-    angularVelocity1 = abs((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1));
+    deltaTheta1 = (thetaCurrent1 - lastThetaCurrent1);
+    angularVelocity1 = abs((double) deltaTheta1) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1));
     lastChange1 = micros();
     lastThetaCurrent1 = thetaCurrent1;
     velocityChanged = true;
   }
 
   if (lastThetaCurrent2 != thetaCurrent2) {
-    angularVelocity2 = abs((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2));
+    deltaTheta2 = (thetaCurrent2 - lastThetaCurrent2);
+    angularVelocity2 = abs((double) deltaTheta2) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2));
     lastChange2 = micros();
     lastThetaCurrent2 = thetaCurrent2;
     velocityChanged = true;
@@ -103,7 +107,7 @@ void loop() {
     rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
     forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 );
     velocityChanged = false;
-    currentAngle = currentAngle + (double) (radius * ((thetaCurrent1 - lastThetaCurrent1) - (thetaCurrent2 - lastThetaCurrent2)) / wheelbase);
+    currentAngle = currentAngle + ( (double) radius * (deltaTheta1 - deltaTheta2) / wheelbase);
     Serial.print(desiredAngle);
     Serial.print("\t");
     Serial.print(currentAngle);
@@ -141,8 +145,8 @@ void loop() {
     analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
     analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
   } else {
-    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
-    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
+    analogWrite(m2SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
+    analogWrite(m1SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
   }
   
   if (v_a1 > 0) {
