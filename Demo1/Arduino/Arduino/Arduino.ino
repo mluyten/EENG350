@@ -24,6 +24,8 @@ int m1SpeedPin = 9;      // voltage
 int m2DirPin = 8;
 int m2SpeedPin = 10;
 
+int a1Pin = 0;
+int a2Pin = 0;
 
 // Distance calculation variables -------------------------------------------------
 int thetaCurrent1 = 0;
@@ -49,13 +51,13 @@ float IForward = 0.0;    //Variables that the program calculated as coefficients
 // Rotational velocity PI controller variables ---------------------------------
 float desiredRotational = 0.0, deltaRotational = 0.0;
 float delta_v = 0.0;  //PI Output
-float KpRotational = 0.014802, KiRotational = 0.05901;
+float KpRotational = 0.044802, KiRotational = 0.05901;
 float IRotational = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Angle and Position controller variables ----------------------------------
 float desiredPosition = 0.0, deltaPosition = 0.0, currentPosition = 0.0;
 float desiredAngle = 3.14, deltaAngle = 0.0, currentAngle = 0.0;
-float KpPos = 0.5, KpAng = 0.5;
+float KpPos = 0.5, KpAng = 1;
 
 // Motor Voltage Calcs-----------------------------------------------------
 double v_a1 = (v_bar + delta_v) / 2;
@@ -87,88 +89,100 @@ void loop() {
   thetaCurrent1 = -1 * myEnc1.read(); //Switch polarity of counts.
   thetaCurrent2 = myEnc2.read();
 
-  if (lastThetaCurrent1 != thetaCurrent1) {
-    deltaTheta1 = (thetaCurrent1 - lastThetaCurrent1);
-    angularVelocity1 = abs((double) deltaTheta1) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1));
-    lastChange1 = micros();
-    lastThetaCurrent1 = thetaCurrent1;
-    velocityChanged = true;
+  if (lastThetaCurrent1 != thetaCurrent1) { // Updates wheel 1 variables whenever wheel 1 encoder counts changes
+    deltaTheta1 = (thetaCurrent1 - lastThetaCurrent1); // Change in encoder counts
+    angularVelocity1 = (double) deltaTheta1 * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1)); // Wheel 1 angular velocity in rad/s
+    lastChange1 = micros(); // Updates time when the wheel 1 variables were updated
+    lastThetaCurrent1 = thetaCurrent1; // Updates current encoder counts
+    velocityChanged = true; // Enters velocity calculation if statement
   }
 
-  if (lastThetaCurrent2 != thetaCurrent2) {
-    deltaTheta2 = (thetaCurrent2 - lastThetaCurrent2);
-    angularVelocity2 = abs((double) deltaTheta2) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2));
-    lastChange2 = micros();
-    lastThetaCurrent2 = thetaCurrent2;
-    velocityChanged = true;
+  if (lastThetaCurrent2 != thetaCurrent2) { // Updates wheel 2 variables whenever wheel 1 encoder counts changes
+    deltaTheta2 = (thetaCurrent2 - lastThetaCurrent2); // Change in encoder counts
+    angularVelocity2 = (double) deltaTheta2 * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2)); // Wheel 2 angular velocity in rad/s
+    lastChange2 = micros(); // Updates time when the wheel 1 variables were updated
+    lastThetaCurrent2 = thetaCurrent2; // Updates current encoder counts
+    velocityChanged = true; // Enters velocity calculation if statement
   }
 
-  if (velocityChanged) {
-    rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
-    forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 );
-    velocityChanged = false;
-    currentAngle = currentAngle + ( (double) radius * (deltaTheta1 - deltaTheta2) / wheelbase);
-    Serial.print(desiredAngle);
+  if (velocityChanged) { // If encoder counts changes on either wheel, update velocity variables
+    rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase ); // Robot's rotational velocity in rad/s
+    forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 ); // Robot's forward velocity in in/s
+    velocityChanged = false; // ensure this loop does not execute unless encoder counts changes
+    currentAngle = currentAngle + ( (double) radius * (deltaTheta1 - deltaTheta2) * 2.0 * 3.14159 / 3200.0 / wheelbase); // Updates the current angle of the robot in rad
+    Serial.print(deltaAngle);
     Serial.print("\t");
-    Serial.print(currentAngle);
+    Serial.print(delta_v);
     Serial.print("\t");
-    Serial.println(deltaRotational);
+    Serial.println(v_bar);
   }
 
-  currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * 2 * radius / 3200 / 2;
-
-  deltaPosition = desiredPosition - currentPosition;
-  deltaAngle = desiredAngle - currentAngle;
-
-  desiredForward = KpPos * abs(deltaPosition);
-  desiredRotational = KpAng * abs(deltaAngle);
-  
-  if (desiredForward > 10)
+  currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * radius / 3200; // current position of the robot in inches
+  deltaPosition = desiredPosition - currentPosition; // Position error ie. distance (in inches) from desired position
+  desiredForward = KpPos * abs(deltaPosition); // Forward velocity P controller. Takes difference in position and multiplies it by a proportional controller to get desired velocity
+  if (desiredForward > 10) // Saturation for position P controller. Ensures that desired forward velocity cannot be greater than physically possible
     desiredForward = 18;
 
-  if (desiredAngle > 5)
+  deltaAngle = desiredAngle - currentAngle; // Angle error ie. distance (in radians) from desired angle
+  desiredRotational = KpAng * abs(deltaAngle); // Rotational velocity P controller. Takes difference in angle and multiplies it by a proportional controller to get desired velocity
+  if (desiredAngle > 5) // Saturation for angle P controller. Ensures that desired rotational velocity cannot be greater than physically possible
     desiredAngle = 5;
 
-  deltaForward = desiredForward - forwardVelocity;
-  deltaRotational = desiredRotational - rotationalVelocity;
+  deltaForward = desiredForward - abs(forwardVelocity); // Forward velocity error ie difference (in in/s) between desired and actual forward velocity
+  IForward = IForward + 0.000001 * sampleRate * deltaForward; // Integral of the forward velocity PI controller (in in)
+  v_bar = KpForward * deltaForward + KiForward * IForward; // V_bar voltage from forward velocity PI controller
+  
+  deltaRotational = desiredRotational - abs(rotationalVelocity); // Rotational velocity error ie difference (in in/s) between desired and actual forward velocity
+  IRotational = IRotational + 0.000001 * sampleRate * deltaRotational; // Integral of the rotational velocity PI controller (in in)
+  delta_v = KpRotational * deltaRotational + KiRotational * IRotational; // delta_v voltage from forward velocity PI controller
 
-  IForward = IForward + 0.000001 * sampleRate * deltaForward;
-  IRotational = IRotational + 0.000001 * sampleRate * deltaRotational;
-
-  v_bar = KpForward * forwardVelocity + KiForward * IForward;
-  delta_v = KpRotational * rotationalVelocity + KiRotational * IRotational;
-
-  v_a1 = (v_bar + delta_v) / 2;
+  v_a1 = (v_bar + delta_v) / 2; 
   v_a2 = (v_bar - delta_v) / 2;
 
-  if (deltaAngle > 0) {
-    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
-    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
-  } else {
-    analogWrite(m2SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
-    analogWrite(m1SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
-  }
   
-  if (v_a1 > 0) {
-    if (deltaPosition >= 0) 
-      digitalWrite(m1DirPin, HIGH);
-    else
-      digitalWrite(m1DirPin, LOW);
-  } else {
-    if (deltaPosition >= 0)
-      digitalWrite(m1DirPin, LOW);
-    else 
-      digitalWrite(m1DirPin, HIGH);
+  if (deltaAngle > 0) { 
+    a1Pin = m1SpeedPin;
+    a2Pin = m2SpeedPin;
   }
-  if (v_a2 > 0) {
-    if (deltaPosition >= 0) 
-      digitalWrite(m2DirPin, HIGH);
-    else
-      digitalWrite(m2DirPin, LOW);
-  } else {
-    
-    digitalWrite(m2DirPin, LOW);
+  else {
+    a1Pin = m2SpeedPin;
+    a2Pin = m1SpeedPin;
   }
+
+  analogWrite(a1Pin, ( (int) (abs(v_a1) * 256)) );
+  analogWrite(a2Pin, ( (int) (abs(v_a2) * 256)) );
+
+  if (v_a1 > 0 && v_a2 > 0) {
+    if (deltaPosition >= 0) {
+      digitalWrite(a1Pin, HIGH);
+      digitalWrite(a2Pin, HIGH);
+    }
+    else {
+      digitalWrite(a1Pin, LOW);
+      digitalWrite(a2Pin, LOW);
+    }
+  }
+  else if (v_a1 > 0 && v_a2 < 0) {
+    digitalWrite(a1Pin, HIGH);
+    digitalWrite(a2Pin, LOW);
+
+  }
+  else if (v_a1 < 0 && v_a2 > 0) {
+    digitalWrite(a1Pin, LOW);
+    digitalWrite(a2Pin, HIGH);
+  }
+  else {
+    if (deltaPosition >= 0) {
+      digitalWrite(a1Pin, LOW);
+      digitalWrite(a2Pin, LOW);
+    }
+    else {
+      digitalWrite(a1Pin, HIGH);
+      digitalWrite(a2Pin, HIGH);
+    }
+  }
+      
+
   /*
   analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
   analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
