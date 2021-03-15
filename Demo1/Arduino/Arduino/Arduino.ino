@@ -103,12 +103,13 @@ void loop() {
     rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
     forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 );
     velocityChanged = false;
-    //Serial.print(deltaPosition);
-    //Serial.print("\t");
-    //Serial.println(deltaForward);
+    Serial.print(deltaPosition);
+    Serial.print("\t");
+    Serial.println(deltaForward);
   }
 
   currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * 2 * radius / 3200 / 2;
+  currentAngle = IRotational;
 
   deltaPosition = desiredPosition - currentPosition;
   deltaAngle = desiredAngle - currentAngle;
