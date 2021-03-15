@@ -47,13 +47,13 @@ float IForward = 0.0;    //Variables that the program calculated as coefficients
 // Rotational velocity PI controller variables ---------------------------------
 float desiredRotational = 0.0, deltaRotational = 0.0;
 float delta_v = 0.0;  //PI Output
-float KpRotational = 0.014802, KiRotational = 0.13901;
+float KpRotational = 0.014802, KiRotational = 0.05901;
 float IRotational = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Angle and Position controller variables ----------------------------------
-float desiredPosition = 36.0, deltaPosition = 0.0, currentPosition = 0.0;
-float desiredAngle = 0.0, deltaAngle = 0.0, currentAngle = 0.0;
-float KpPos = 0.5, KpAng = 0.01;
+float desiredPosition = 0.0, deltaPosition = 0.0, currentPosition = 0.0;
+float desiredAngle = 3.14, deltaAngle = 0.0, currentAngle = 0.0;
+float KpPos = 0.5, KpAng = 0.5;
 
 // Motor Voltage Calcs-----------------------------------------------------
 double v_a1 = (v_bar + delta_v) / 2;
@@ -86,14 +86,14 @@ void loop() {
   thetaCurrent2 = myEnc2.read();
 
   if (lastThetaCurrent1 != thetaCurrent1) {
-    angularVelocity1 = ((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1));
+    angularVelocity1 = abs((double) (thetaCurrent1 - lastThetaCurrent1)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange1));
     lastChange1 = micros();
     lastThetaCurrent1 = thetaCurrent1;
     velocityChanged = true;
   }
 
   if (lastThetaCurrent2 != thetaCurrent2) {
-    angularVelocity2 = ((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2));
+    angularVelocity2 = abs((double) (thetaCurrent2 - lastThetaCurrent2)) * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2));
     lastChange2 = micros();
     lastThetaCurrent2 = thetaCurrent2;
     velocityChanged = true;
@@ -103,19 +103,21 @@ void loop() {
     rotationalVelocity = ( (double) radius * (angularVelocity1 - angularVelocity2) / wheelbase );
     forwardVelocity = ( (double) radius * (angularVelocity1 + angularVelocity2) / 2 );
     velocityChanged = false;
-    Serial.print(deltaPosition);
+    currentAngle = currentAngle + (double) (radius * ((thetaCurrent1 - lastThetaCurrent1) - (thetaCurrent2 - lastThetaCurrent2)) / wheelbase);
+    Serial.print(desiredAngle);
     Serial.print("\t");
-    Serial.println(deltaForward);
+    Serial.print(currentAngle);
+    Serial.print("\t");
+    Serial.println(deltaRotational);
   }
 
   currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * 2 * radius / 3200 / 2;
-  currentAngle = IRotational;
 
   deltaPosition = desiredPosition - currentPosition;
   deltaAngle = desiredAngle - currentAngle;
 
   desiredForward = KpPos * abs(deltaPosition);
-  desiredAngle = KpAng * abs(deltaAngle);
+  desiredRotational = KpAng * abs(deltaAngle);
   
   if (desiredForward > 10)
     desiredForward = 18;
@@ -135,6 +137,35 @@ void loop() {
   v_a1 = (v_bar + delta_v) / 2;
   v_a2 = (v_bar - delta_v) / 2;
 
+  if (deltaAngle > 0) {
+    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
+    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
+  } else {
+    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
+    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
+  }
+  
+  if (v_a1 > 0) {
+    if (deltaPosition >= 0) 
+      digitalWrite(m1DirPin, HIGH);
+    else
+      digitalWrite(m1DirPin, LOW);
+  } else {
+    if (deltaPosition >= 0)
+      digitalWrite(m1DirPin, LOW);
+    else 
+      digitalWrite(m1DirPin, HIGH);
+  }
+  if (v_a2 > 0) {
+    if (deltaPosition >= 0) 
+      digitalWrite(m2DirPin, HIGH);
+    else
+      digitalWrite(m2DirPin, LOW);
+  } else {
+    
+    digitalWrite(m2DirPin, LOW);
+  }
+  /*
   analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 8) );
   analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 8) );
   if (v_a1 > 0) {
@@ -157,6 +188,7 @@ void loop() {
     
     digitalWrite(m2DirPin, LOW);
   }
+  */
 
   timeNow = micros();
 
