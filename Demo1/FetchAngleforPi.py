@@ -24,6 +24,7 @@ class ComputerVision():
             return image
         except:
             print("Failed to capture")
+            return -1
             # display the image on screen and wait for a keypress
         # The above code was given to us from the professors of SEED Lab
 
@@ -81,7 +82,7 @@ class ComputerVision():
                 return math.degrees(math.atan(width / realDistance))
         except:
             #print("No Aruco Detected")
-            return "NA"
+            return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.
     # Essentially we start out by determining if there is an AruCo marker in the image. It does edge detection and
     # checks to see if the Aruco in the image is within any of the dictionaries supplied. I currently only have one
@@ -157,7 +158,3 @@ class ComputerVision():
         t3 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
         focalValue = (t1 + t2 + t3) / 3
         print(focalValue)
-        
-cv = ComputerVision()
-while True:
-    print(cv.getArucoAngle())
