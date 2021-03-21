@@ -1,3 +1,6 @@
+# Group 6 | EENG350 | Demo 1 Computer Vision Code
+# Purpose: Detects an Aruco marker and determines the angle between the camera and the Aruco marker
+
 import time
 import cv2
 import math
@@ -31,8 +34,8 @@ class ComputerVision():
     def convertToGray(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return gray
-        # This function when called converts the image from ghe BGR color space to Grayscale, need to do this because
-        # an image is way to big to process if it is in the BGR color space.
+        # This function when called converts the image from the BGR color space to Grayscale, need to do this because
+        # an image is way too big to process if it is in the BGR color space.
 
     def resize(self, gray):
         resizeImg = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
@@ -91,7 +94,7 @@ class ComputerVision():
     # However there was some modifying done in order to help this work faster. I removed the function that shows the image for this time, but it can be done whenever needed
     # by calling the function and setting it to show image true. I also made it so if it doesn't find an aruco marker, it doesn't fail, like the code given at the website.
     # I also make it so it works with images that are spit out from the camera, rather than saved images, this will help keep us from filling up the memory on the pi.
-    # I also then adjusted it using the precalculated center of the AruCo marker and compared that to the total size of the image and used that for the dterminations of what
+    # I also then adjusted it using the precalculated center of the AruCo marker and compared that to the total size of the image and used that for the determinations of what
     # quadrant the image is in.
 
     def getArucoAngle(self):
