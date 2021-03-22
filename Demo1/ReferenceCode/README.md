@@ -6,4 +6,4 @@ Matlab: *Contains...*
 
 Matlab1.1: *Contains...*
 
-StepResponse: *Contains all of the step response data.*
+StepResponse: *Contains all of the step response data and related plots.*
