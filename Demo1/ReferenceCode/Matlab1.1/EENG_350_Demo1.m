@@ -4,7 +4,7 @@
 %
 % Luis Cisneros
 
-%% Mini Project 4.6: Simulate and Tune the Model to Match the 'actual' Data
+%% Simulate and Tune the Model to Match the 'actual' Data
 % The controller was designed using MATLAB to guess and check sigma and K values 
 % that could be used to simplify the transfer function for the step response 
 % recorded from the motor step response data. This is done graphically by 
