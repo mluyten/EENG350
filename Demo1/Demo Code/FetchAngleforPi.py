@@ -72,12 +72,12 @@ class ComputerVision():
 
             # print("[INFO] ArUco marker ID: {}".format(markerID))
 
-            h, w = image.shape
-            focalLength = 912.916
+            h, w = image.shape 
+            focalLength = 912.916 #Value found expiermentally 
             arucoHeight = 100  # in mm
-            pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2
-            realDistance = focalLength * arucoHeight / pixelHeight
-            if cX < w / 2:
+            pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
+            realDistance = focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
+            if cX < w / 2: #This is jsut for setting the negative angle to the left or right as requested
                 width = realDistance * ((w / 2) - cX) / focalLength
                 return math.degrees(-1 * math.atan(width / realDistance))
             else:
@@ -114,7 +114,7 @@ class ComputerVision():
         # This function is run whenever we initialize the project. It takes 3 images pretty close together and then averages the gains
         # from them in order to set the white balance so we don't have any issues when it comes to stray colors and odditites in our
         # pictures.
-    def focalLength(self, resize):
+    def focalLength(self, resize): #This is the function that was used to expiermentally find focal length.
         arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
         image = resize
         # verify that the supplied ArUCo tag exists and is supported by
@@ -128,7 +128,7 @@ class ComputerVision():
                 # flatten the ArUco IDs list
                 ids = ids.flatten()
                 # loop over the detected ArUCo corners
-                for (markerCorner, markerID) in zip(corners, ids):
+                for (markerCorner, markerID) in zip(corners, ids):-
                     # extract the marker corners (which are always returned in
                     # top-left, top-right, bottom-right, and bottom-left order)
                     corners = markerCorner.reshape((4, 2))
@@ -153,7 +153,7 @@ class ComputerVision():
         except:
             #print("No Aruco Detected")
             return "NA"
-    def findFocalLength(self):
+    def findFocalLength(self): #This call does it three times and takes the average to get a decent focal length.
         t1 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
         time.sleep(1)
         t2 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
