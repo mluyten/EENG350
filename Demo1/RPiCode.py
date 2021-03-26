@@ -28,11 +28,11 @@ lcd.color = [0, 0, 0]
 lcd.clear()
 
 def readPosition():
-    angle = -1;
+    angle = 1;
     while(runThread):
         lcd.color = [0,0,100]
         angle = -1 * cam.getArucoAngle()
-        if angle == -1:
+        if angle == 1:
             lcd.message = "No Waypoint     \nDetected        "
         else:
             rad = angle * 3.14159 / 180

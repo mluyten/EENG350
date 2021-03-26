@@ -49,7 +49,7 @@ float IForward = 0.0;    //Variables that the program calculated as coefficients
 float desiredRotational = 0.0, deltaRotational = 0.0;
 float delta_v = 0.0;  //PI Output
 //float KpRotational = 0.035, KiRotational = 0.17501;
-float KpRotational = 0.06369139, KiRotational = 0.2584569;
+float KpRotational = 0.06369139, KiRotational = 0.3584569;
 float IRotational = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Angle and Position controller variables ----------------------------------
@@ -82,11 +82,9 @@ void setup() {
 
 void loop() {
   delay(5000);
-  moveRobot(36.0, 0.0);
+  moveRobot(0.0, -3.14159/2);
   delay(100);
-  moveRobot(24.0, 0.0);
-  delay(100);
-  moveRobot(24.0, 0.0);
+  moveRobot(12.0, 0.0);
   analogWrite(m1SpeedPin, (0));
   analogWrite(m2SpeedPin, (0));
   while(true);
@@ -95,10 +93,12 @@ void loop() {
 void moveRobot(float desiredPosition, float desiredAngle) {
   
   clearControlVariables();
+  int positionCounter = 0;
+  bool inFinalPosition = false;
   myEnc1.write(0);
   myEnc2.write(0);
   
-  while ((abs(desiredPosition - currentPosition) > 0.05) || (abs(desiredAngle - currentAngle) > 0.01)) {
+  while (positionCounter < 250) {
     timeBefore = micros();
     
     thetaCurrent1 = -1 * myEnc1.read(); //Switch polarity of counts.
@@ -130,6 +130,17 @@ void moveRobot(float desiredPosition, float desiredAngle) {
       Serial.print(abs(desiredAngle - currentAngle));
       Serial.print("\t");
       Serial.println(v_bar);
+      if ((abs(desiredPosition - currentPosition) < 0.1) && (abs(desiredAngle - currentAngle) <= 0.02)) {
+        if (inFinalPosition) {
+          positionCounter++;
+          inFinalPosition = true;
+        } else {
+          positionCounter = 1;
+          inFinalPosition = true;
+        }
+      } else {
+        positionCounter = 0;
+      }
     }
   
     currentPosition = (thetaCurrent1 + thetaCurrent2) * 3.14 * radius / 3200; // current position of the robot in inches
@@ -166,8 +177,8 @@ void moveRobot(float desiredPosition, float desiredAngle) {
     v_a1 = (v_bar + delta_v) / 2; 
     v_a2 = (v_bar - delta_v) / 2;
   
-    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 15));
-    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 15));
+    analogWrite(m1SpeedPin, ( (int) (abs(v_a1) * 256) + 10));
+    analogWrite(m2SpeedPin, ( (int) (abs(v_a2) * 256) + 10));
   
     if (v_a1 >= 0) {
       digitalWrite(m1DirPin, HIGH);

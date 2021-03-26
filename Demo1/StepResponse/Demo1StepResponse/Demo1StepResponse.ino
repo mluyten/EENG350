@@ -29,8 +29,8 @@ int m2DirPin = 8;
 int m2SpeedPin = 10;
 
 // Motor Voltage Calcs-----------------------------------------------------
-double v_bar = 0.0;
-double delta_v = 1.0;
+double v_bar = 1.0;
+double delta_v = 0.0;
 double v_a1 = (v_bar + delta_v) / 2;
 double v_a2 = (v_bar - delta_v) / 2;
 
