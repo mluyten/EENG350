@@ -1,8 +1,12 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
-/* Name: Group 6 | EENG350 | Demo 1 Step Response
-   Purpose: Step response experiment
+/* Name: Group 6 | EENG350 | Demo 1 Arduino Code
+
+   Purpose: Makes the robot move and turn a specified angle and distance.
+   Collects data from the encoders about the current position and velocity of the robot.
+   Implements a PID loop to control the motors to produce the desired behavior.
+   
    Note: when viewed from the front, left wheel is 1, right wheel is 2. driveModePin is 4 on the motor shield, 5 on the Teensy
 */
 
@@ -11,8 +15,8 @@ unsigned long lastChange1 = 0;
 unsigned long lastChange2 = 0;
 bool velocityChanged = false;
 
-int sampleRate = 5;      // 5 us
-double radius = 3.0;          // inches
+int sampleRate = 5;            // 5 us
+double radius = 3.0;           // inches
 double wheelbase = 10.71;      // inches between the center of the two wheels
 
 // Motor Shield Pins -----------------------------------------------------
@@ -98,7 +102,12 @@ void moveRobot(float desiredPosition, float desiredAngle) {
   myEnc1.write(0);
   myEnc2.write(0);
   
+<<<<<<< HEAD:Demo1/Arduino/Arduino/Arduino.ino
   while (positionCounter < 250) {
+=======
+  // PID loop
+  while ((abs(desiredPosition - currentPosition) > 0.05) || (abs(desiredAngle - currentAngle) > 0.01)) {
+>>>>>>> 6425d14ee7bbd4623e1e40a17200c4597467a11a:Demo1/Demo Code/Demo1_Final_Arduino.ino
     timeBefore = micros();
     
     thetaCurrent1 = -1 * myEnc1.read(); //Switch polarity of counts.

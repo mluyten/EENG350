@@ -1,3 +1,6 @@
+# Group 6 | EENG350 | Demo 1 Computer Vision Code
+# Purpose: Detects an Aruco marker and determines the angle between the camera and the Aruco marker
+
 import time
 import cv2
 import math
@@ -31,8 +34,8 @@ class ComputerVision():
     def convertToGray(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return gray
-        # This function when called converts the image from ghe BGR color space to Grayscale, need to do this because
-        # an image is way to big to process if it is in the BGR color space.
+        # This function when called converts the image from the BGR color space to Grayscale, need to do this because
+        # an image is way too big to process if it is in the BGR color space.
 
     def resize(self, gray):
         resizeImg = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
@@ -69,12 +72,12 @@ class ComputerVision():
 
             # print("[INFO] ArUco marker ID: {}".format(markerID))
 
-            h, w = image.shape
-            focalLength = 912.916
+            h, w = image.shape 
+            focalLength = 912.916 #Value found expiermentally 
             arucoHeight = 100  # in mm
-            pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2
-            realDistance = focalLength * arucoHeight / pixelHeight
-            if cX < w / 2:
+            pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
+            realDistance = focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
+            if cX < w / 2: #This is jsut for setting the negative angle to the left or right as requested
                 width = realDistance * ((w / 2) - cX) / focalLength
                 return math.degrees(-1 * math.atan(width / realDistance))
             else:
@@ -91,7 +94,7 @@ class ComputerVision():
     # However there was some modifying done in order to help this work faster. I removed the function that shows the image for this time, but it can be done whenever needed
     # by calling the function and setting it to show image true. I also made it so if it doesn't find an aruco marker, it doesn't fail, like the code given at the website.
     # I also make it so it works with images that are spit out from the camera, rather than saved images, this will help keep us from filling up the memory on the pi.
-    # I also then adjusted it using the precalculated center of the AruCo marker and compared that to the total size of the image and used that for the dterminations of what
+    # I also then adjusted it using the precalculated center of the AruCo marker and compared that to the total size of the image and used that for the determinations of what
     # quadrant the image is in.
 
     def getArucoAngle(self):
@@ -111,7 +114,7 @@ class ComputerVision():
         # This function is run whenever we initialize the project. It takes 3 images pretty close together and then averages the gains
         # from them in order to set the white balance so we don't have any issues when it comes to stray colors and odditites in our
         # pictures.
-    def focalLength(self, resize):
+    def focalLength(self, resize): #This is the function that was used to expiermentally find focal length.
         arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
         image = resize
         # verify that the supplied ArUCo tag exists and is supported by
@@ -125,7 +128,7 @@ class ComputerVision():
                 # flatten the ArUco IDs list
                 ids = ids.flatten()
                 # loop over the detected ArUCo corners
-                for (markerCorner, markerID) in zip(corners, ids):
+                for (markerCorner, markerID) in zip(corners, ids):-
                     # extract the marker corners (which are always returned in
                     # top-left, top-right, bottom-right, and bottom-left order)
                     corners = markerCorner.reshape((4, 2))
@@ -150,7 +153,7 @@ class ComputerVision():
         except:
             #print("No Aruco Detected")
             return "NA"
-    def findFocalLength(self):
+    def findFocalLength(self): #This call does it three times and takes the average to get a decent focal length.
         t1 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
         time.sleep(1)
         t2 = (self.focalLength(self.resize(self.convertToGray(self.takeImage()))))
