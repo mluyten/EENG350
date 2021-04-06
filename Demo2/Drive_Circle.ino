@@ -166,7 +166,7 @@ void moveRobot(float desiredPosition, float desiredAngle, float maxForwardVeloci
       velocityChanged = true; // Enters velocity calculation if statement
     }
   
-    if (lastThetaCurrent2 != thetaCurrent2) { // Updates wheel 2 variables whenever wheel 1 encoder counts changes
+    if (lastThetaCurrent2 != thetaCurrent2) { // Updates wheel 2 variables whenever wheel 2 encoder counts changes
       deltaTheta2 = (thetaCurrent2 - lastThetaCurrent2); // Change in encoder counts
       angularVelocity2 = (double) deltaTheta2 * 2.0 * 3.14159 / 3200.0 / (0.000001 * (micros() - lastChange2)); // Wheel 2 angular velocity in rad/s
       lastChange2 = micros(); // Updates time when the wheel 1 variables were updated
