@@ -71,8 +71,21 @@ unsigned long timeNow = micros();
 Encoder myEnc1(1, 2); // wheel 1 (left)
 Encoder myEnc2(3, 4); // wheel 2 (right)
 
+// Misc Booleans ------------------------------------------------------------
+bool stop = false;
+bool done = true;
+byte data[32];
+
 void setup() {
   Serial.begin(115200);
+
+// initialize i2c as slave
+  Wire.begin(SLAVE_ADDRESS);
+
+  // define callbacks for i2c communication
+  Wire.onReceive(receiveData);
+  Wire.onRequest(sendData);
+
   pinMode(driveModePin, OUTPUT);
   digitalWrite(driveModePin, HIGH);
 
@@ -91,7 +104,43 @@ void loop() {
   while(true);
 }
 
-void moveRobot(float desiredPosition, float desiredAngle) {
+void receiveData(int byteCount) {
+  i = 0;
+  while (Wire.available()) {
+    data[i] = Wire.read();
+    i++;
+  }
+  i--;
+
+  if (data[1] == 1) {
+    moveRobot(0, 3.14159*4, 10, 2);
+  }
+  else if (data[1] == 2) {
+    stop = true;
+    done = false;
+    moveRobot(0, (float)(data[4] + data[5] / 256), 18, 5);
+    done = true;
+  }
+  else if (data[1] == 3) {
+    stop = true;
+    done = false;
+    moveRobot((float)(data[2] + data[3] / 256) - 12, 0, 18, 5);
+    done = true;
+  }
+}
+
+void sendData() {
+  if (i == 0) {
+    if (data[0] == 255) {
+      if (done)
+        Wire.write(1);
+      else
+        Wire.write(0);
+    }
+  }
+}
+
+void moveRobot(float desiredPosition, float desiredAngle, float maxForwardVelocity, float maxRotationalVelocity) {
   
   clearControlVariables();
   myEnc1.write(0);
@@ -99,6 +148,11 @@ void moveRobot(float desiredPosition, float desiredAngle) {
   
   // PID loop
   while ((abs(desiredPosition - currentPosition) > 0.05) || (abs(desiredAngle - currentAngle) > 0.01)) {
+    if (stop) {
+      stop = false;
+      return;
+    }
+
     timeBefore = micros();
     
     thetaCurrent1 = -1 * myEnc1.read(); //Switch polarity of counts.
@@ -136,13 +190,13 @@ void moveRobot(float desiredPosition, float desiredAngle) {
     if (desiredPosition > currentPosition)
     deltaPosition = desiredPosition - currentPosition; // Position error ie. distance (in inches) from desired position
     desiredForward = KpPos * (deltaPosition); // Forward velocity P controller. Takes difference in position and multiplies it by a proportional controller to get desired velocity
-    if (desiredForward > 10) // Saturation for position P controller. Ensures that desired forward velocity cannot be greater than physically possible
-      desiredForward = 18;
+    if (desiredForward > maxForwardVelocity) // Saturation for position P controller. Ensures that desired forward velocity cannot be greater than physically possible
+      desiredForward = maxForwardVelocity;
   
     deltaAngle = desiredAngle - currentAngle; // Angle error ie. distance (in radians) from desired angle
     desiredRotational = KpAng * (deltaAngle); // Rotational velocity P controller. Takes difference in angle and multiplies it by a proportional controller to get desired velocity
-    if (desiredRotational > 5) // Saturation for angle P controller. Ensures that desired rotational velocity cannot be greater than physically possible
-      desiredRotational = 5;
+    if (desiredRotational > maxRotationalVelocity) // Saturation for angle P controller. Ensures that desired rotational velocity cannot be greater than physically possible
+      desiredRotational = maxRotationalVelocity;
   
     deltaForward = desiredForward - forwardVelocity; // Forward velocity error ie difference (in in/s) between desired and actual forward velocity
     if (deltaPosition < 0) {

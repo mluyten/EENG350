@@ -77,10 +77,10 @@ class ComputerVision():
             realDistance = focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
             if cX < w / 2: #This is jsut for setting the negative angle to the left or right as requested
                 width = realDistance * ((w / 2) - cX) / focalLength
-                return [realDistance, math.degrees(-1 * math.atan(width / realDistance))]
+                return [realDistance, -1 * math.atan(width / realDistance)]
             else:
                 width = realDistance * (cX - (w / 2)) / focalLength
-                return [realDistance, math.degrees(math.atan(width / realDistance))]
+                return [realDistance, math.atan(width / realDistance)]
         else:
             return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.
