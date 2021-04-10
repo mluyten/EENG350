@@ -74,13 +74,11 @@ class ComputerVision():
             focalLength = 912.916 #Value found expiermentally 
             arucoHeight = 100  # in mm
             pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
-            realDistance = focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
-            if cX < w / 2: #This is jsut for setting the negative angle to the left or right as requested
-                width = realDistance * ((w / 2) - cX) / focalLength
-                return [realDistance, -1 * math.atan(width / realDistance)]
-            else:
-                width = realDistance * (cX - (w / 2)) / focalLength
-                return [realDistance, math.atan(width / realDistance)]
+            realDistance = 0.0393701*focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
+            width = realDistance * (cX - (w / 2)) / focalLength
+            target = 12.00 - width
+            hyp = math.sqrt(realDistance^2 + target^2)
+            return [hyp, math.atan(target / realDistance)]
         else:
             return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.
