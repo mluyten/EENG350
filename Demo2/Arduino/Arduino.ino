@@ -126,6 +126,7 @@ void receiveData() {
     data[i] = Serial.read();
     i++;
   }
+  Serial.println(i);
 
   if (data[0] == 1) {
     moveRobot(0, 3.14159*2, 18, 0.6);

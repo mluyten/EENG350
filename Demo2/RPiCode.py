@@ -34,38 +34,17 @@ bus = smbus2.SMBus(1)
 
 ser = serial.Serial('/dev/ttyACM0', 115200)
 
-def writeByteArray(array):
-    #try:
-    bus.write_i2c_block_data(address, len(array), array)
-    return 0
-    #except:
-        #print("I2C Block TX Error")
-        #return -1
-    
-def readByteArray(reg):
-    #try:
-        bus.write_byte(address, reg)
-        length = bus.read_byte(address)
-        array = []
-        for i in range(length):
-            array.append(bus.read_byte(address))
-        return array
-    #except:
-        #print("I2C Block RX Error")
-        #return -1
-
 def scan():
     beaconData = -1
-    while cam.detect():
+    while not cam.arucoExist():
         pass
     return
         
 def navigate():
     beaconData = -1
-    while True:
-        beaconData = cam.getAngleAndDistance()
-        if beaconData != -1:
-            return beaconData
+    beaconData = cam.getAngleAndDistance()
+    if beaconData != -1:
+        return beaconData
 
 try:
     while True:
@@ -75,9 +54,18 @@ try:
             scan()
             print("Found")
             ser.write(struct.pack('B', 0))
+            print("Nav")
             data = navigate()
-            driveDistance = 
-            sendArray = [2, np.uint8(data[0]), np.uint8(data[0]*256), np.uint8(data[1]), np.uint8(data[0]*256)]
+            print("Nav Done")
+            while data == -1:
+                data = navigate()
+            driveDistance = np.sqrt(np.power(data[0], 2) + np.power(data[1], 2)) - 6
+            
+            sendArray = [struct.pack('B', 2), struct.pack('B', np.uint8(driveDistance)),
+                         struct.pack('B', np.uint8(driveDistance)), struct.pack('B', np.uint8(data[2])),
+                         struct.pack('B', np.uint8(data[2]*256))]
+            for byte in sendArray:
+                ser.write(byte)
             while ser.in_waiting == 0:
                 pass
             ser.read()
