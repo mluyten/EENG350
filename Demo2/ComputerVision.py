@@ -4,6 +4,7 @@
 import time
 import cv2
 import math
+import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
@@ -50,7 +51,7 @@ class ComputerVision():
         arucoParams = cv2.aruco.DetectorParameters_create()
         (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict,
                                                            parameters=arucoParams)
-        if len(ids) > 0:
+        if ids != None:
             # verify *at least* one ArUco marker was detected
             if len(corners) > 0:
                 # flatten the ArUco IDs list
@@ -77,7 +78,7 @@ class ComputerVision():
             realDistance = 0.0393701*focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
             width = realDistance * (cX - (w / 2)) / focalLength
             target = 12.00 - width
-            hyp = math.sqrt(realDistance^2 + target^2)
+            hyp = math.sqrt(np.power(realDistance, 2) + np.power(target, 2))
             return [hyp, math.atan(target / realDistance)]
         else:
             return -1
