@@ -73,8 +73,6 @@ Encoder myEnc1(1, 2); // wheel 1 (left)
 Encoder myEnc2(3, 4); // wheel 2 (right)
 
 // Misc Booleans ------------------------------------------------------------
-bool stop = false;
-bool done = true;
 byte data[32];
 
 #define SLAVE_ADDRESS 0
@@ -131,16 +129,15 @@ void receiveData() {
 
   if (data[0] == 1) {
     moveRobot(0, 3.14159*2, 18, 0.6);
+    moveRobot(0, 3.14159*2, 18, 0.4);
   }
   else if (data[0] == 2) {
     moveRobot(0, (float)(data[4] + data[5] / 256), 18, 5);
     Serial.write(1);
   }
   else if (data[0] == 3) {
-    stop = true;
-    done = false;
-    moveRobot((float)(data[2] + data[3] / 256) - 12, 0, 18, 5);
-    done = true;
+    moveRobot((float)(data[2] + data[3] / 256), 0, 18, 5);
+    Serial.write(1);
   }
 }
 

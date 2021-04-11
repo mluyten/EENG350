@@ -56,6 +56,12 @@ def readByteArray(reg):
 
 def scan():
     beaconData = -1
+    while cam.detect():
+        pass
+    return
+        
+def navigate():
+    beaconData = -1
     while True:
         beaconData = cam.getAngleAndDistance()
         if beaconData != -1:
@@ -66,17 +72,22 @@ try:
         command = input("Action Menu:\n1 - Demo2.1\n2 - Demo2.2\n3 - Quit\n")
         if command == "1":
             ser.write(struct.pack('B', 1))
-            data = scan()
+            scan()
             print("Found")
             ser.write(struct.pack('B', 0))
-            #sendArray = [2, np.uint8(data[0]), np.uint8(data[0]*256), np.uint8(data[1]), np.uint8(data[0]*256)]
-            #while ser.in_waiting == 0:
-                #pass
-            #ser.read()
+            data = navigate()
+            driveDistance = 
+            sendArray = [2, np.uint8(data[0]), np.uint8(data[0]*256), np.uint8(data[1]), np.uint8(data[0]*256)]
+            while ser.in_waiting == 0:
+                pass
+            ser.read()
 
         elif command == "2":
-            writeByteArray(1)
-            data = scan()
+            ser.write(struct.pack('B', 1))
+            scan()
+            print("Found")
+            ser.write(struct.pack('B', 0))
+            data = navigate()
 
         elif command == "3":
             print("Error: Command Not Recognized")
