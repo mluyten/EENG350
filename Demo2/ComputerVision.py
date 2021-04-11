@@ -77,9 +77,7 @@ class ComputerVision():
             pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
             realDistance = 0.0393701*focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
             width = realDistance * (cX - (w / 2)) / focalLength
-            target = 12.00 - width
-            hyp = math.sqrt(np.power(realDistance, 2) + np.power(target, 2))
-            return [hyp, math.atan(target / realDistance)]
+            return [realDistance,width, math.atan(width/ realDistance)]
         else:
             return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.
@@ -110,3 +108,17 @@ class ComputerVision():
         # This function is run whenever we initialize the project. It takes 3 images pretty close together and then averages the gains
         # from them in order to set the white balance so we don't have any issues when it comes to stray colors and odditites in our
         # pictures.
+    
+    def arucoDetect(self, resize, showImage=False)
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+        image = resize
+        # verify that the supplied ArUCo tag exists and is supported by
+        # OpenCV
+        arucoParams = cv2.aruco.DetectorParameters_create()
+        (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict,
+                                                           parameters=arucoParams)
+        if ids != None:
+            return true
+        else:
+            return false
+        
