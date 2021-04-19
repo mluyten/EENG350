@@ -77,7 +77,10 @@ class ComputerVision():
             pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
             realDistance = 0.0393701*focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
             width = realDistance * (cX - (w / 2)) / focalLength
-            return [realDistance, width, math.atan(width / realDistance)]
+            if cX < 0:
+                return [realDistance, width, math.atan(width / realDistance)]
+            else:
+                return [realDistance, width, -math.atan(width / realDistance)]
         else:
             return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.

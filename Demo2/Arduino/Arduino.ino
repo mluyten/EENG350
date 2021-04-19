@@ -46,20 +46,20 @@ double forwardVelocity = 0.0;
 float desiredForward = 0.0, deltaForward = 0.0;
 float v_bar = 0.0;  //PI Output
 //float KpForward = 0.011211, KiForward = 0.05605;
-float KpForward = 0.02136179, KiForward = 0.1568089;
+float KpForward = 0.06136179, KiForward = 0.1568089;
 float IForward = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Rotational velocity PI controller variables ---------------------------------
 float desiredRotational = 0.0, deltaRotational = 0.0;
 float delta_v = 0.0;  //PI Output
 //float KpRotational = 0.035, KiRotational = 0.17501;
-float KpRotational = 0.06369139, KiRotational = 0.4084569;
+float KpRotational = 0.04369139, KiRotational = 0.8084569;
 float IRotational = 0.0;    //Variables that the program calculated as coefficients for the controller parameters
 
 // Angle and Position controller variables ----------------------------------
 float deltaPosition = 0.0, currentPosition = 0.0;
 float deltaAngle = 0.0, currentAngle = 0.0;
-float KpPos = 0.95, KpAng = 0.9;
+float KpPos = 4, KpAng = 1.4;
 
 // Motor Voltage Calcs-----------------------------------------------------
 double v_a1 = (v_bar - delta_v) / 2;
@@ -74,6 +74,7 @@ Encoder myEnc2(3, 4); // wheel 2 (right)
 
 // Misc Booleans ------------------------------------------------------------
 byte data[32];
+bool done = false;
 
 #define SLAVE_ADDRESS 0
 int i = 0;
@@ -101,9 +102,9 @@ void loop() {
 //5175 70 170 works for good slow
 //3500 130 250 workish for fast
 
-void hardCodeCircle(){
+void hardCodeCircle(bool clockwise){
   timeBefore = millis(); //caution: reused variable from PID loop
-  int deltaTime = 3500; //number of milliseconds of turning
+  int deltaTime = 3550; //number of milliseconds of turning
   timeNow = millis();
   
   digitalWrite(m1DirPin, HIGH);
@@ -111,35 +112,66 @@ void hardCodeCircle(){
   
   while(timeNow < timeBefore + deltaTime){        // caution: reused variable from PID loop
     timeNow = millis();
-    analogWrite(m1SpeedPin, 130); //100
-    analogWrite(m2SpeedPin, 250); //220
+    if (clockwise) {
+      analogWrite(m1SpeedPin, 95); //100
+      analogWrite(m2SpeedPin, 215); //220
+    }
+    else {
+      analogWrite(m1SpeedPin, 215); //100
+      analogWrite(m2SpeedPin, 95); //220
+    }
   }
 
   //stop everything after the time is over
-  digitalWrite(m1DirPin, LOW);
-  digitalWrite(m2DirPin, LOW);
+  digitalWrite(m1SpeedPin, 0);
+  digitalWrite(m2SpeedPin, 0);
 }
 
 void receiveData() {
-  i = 0;
-  while (Serial.available() > 0) {
-    data[i] = Serial.read();
-    i++;
+  data[0] = Serial.read();
+  if (data[0] > 1) {
+    for (i = 1; i < 6; i++) {
+      while (Serial.available() == 0);
+      data[i] = Serial.read();
+    }
   }
-  Serial.println(i);
 
   if (data[0] == 1) {
-    moveRobot(0, 3.14159*2, 18, 0.6);
-    moveRobot(0, 3.14159*2, 18, 0.4);
+    moveRobot(0, 3.14159*2, 18, 0.25);
+    if (done == false)
+      moveRobot(0, 3.14159*2, 18, 0.2);
+    done = false;
   }
   else if (data[0] == 2) {
-    moveRobot(0, (float)(data[4] + data[5] / 256), 18, 5);
-    Serial.write(1);
+    float angleCmd = (float)data[3] + (float)(data[4]) / 256;
+    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
+    moveRobot(0, angleCmd, 20, 5);
+    moveRobot(distanceCmd, 0, 20, 5);
   }
   else if (data[0] == 3) {
-    moveRobot((float)(data[2] + data[3] / 256), 0, 18, 5);
-    Serial.write(1);
+    float angleCmd = 0.0 - ((float)data[3] + (float)(data[4]) / 256);
+    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
+    moveRobot(0, angleCmd, 20, 5);
+    moveRobot(distanceCmd, 0, 20, 5);
   }
+  else if (data[0] == 4) {
+    float angleCmd = (float)data[3] + (float)(data[4]) / 256;
+    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
+    moveRobot(0, angleCmd, 18, 5);
+    moveRobot(distanceCmd, 0, 18, 5);
+    hardCodeCircle(data[6]);
+  }
+  else if (data[0] == 5) {
+    float angleCmd = 0.0 - ((float)data[3] + (float)(data[4]) / 256);
+    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
+    moveRobot(0, angleCmd, 20, 5);
+    moveRobot(distanceCmd, 0, 20, 5);
+    hardCodeCircle(data[6]);
+  }
+  Serial.print("Done w/ CMD, please stop.");
+  analogWrite(m1SpeedPin, 0);
+  analogWrite(m2SpeedPin, 0);
+  Serial.flush();
 }
 
 void moveRobot(float desiredPosition, float desiredAngle, float maxForward, float maxRotational) {
@@ -154,6 +186,7 @@ void moveRobot(float desiredPosition, float desiredAngle, float maxForward, floa
     if ((Serial.available() > 0) && (Serial.read() == 0)) {
       analogWrite(m1SpeedPin, 0);
       analogWrite(m2SpeedPin, 0);
+      done = true;
       return;
     }
     
@@ -240,7 +273,7 @@ void moveRobot(float desiredPosition, float desiredAngle, float maxForward, floa
       digitalWrite(m2DirPin, LOW);
     }
 
-    if ((abs(deltaPosition) < 0.1) && (abs(deltaAngle) <= 0.05)) {
+    if ((abs(deltaPosition) < 0.2) && (abs(deltaAngle) <= 0.05)) {
       if (inFinalPosition) {
         positionCounter++;
         inFinalPosition = true;
