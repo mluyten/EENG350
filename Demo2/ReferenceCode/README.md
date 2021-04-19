@@ -4,7 +4,7 @@
 
 StepResponse: *Contains robot step response data.*
 
-Debug Data: *Old data collected from step responses.*
+DebugData: *Old data collected from step responses.*
 
 Drive_Circle.ino: *An early (abandoned) attempt to get the robot to drive in a circle using the PID loop.*
 
