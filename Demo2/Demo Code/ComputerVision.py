@@ -13,34 +13,39 @@ class ComputerVision():
     def __init__(self):
         self.camera = PiCamera()
         self.setWhiteBalance()
+        self.camera.resolution = (640, 480)
+        self.camera.framerate = 32
         # Init set up that tells the pi what camera to use and run the white balance, only runs at set up
 
-    def takeImage(self):
+   # def takeImage(self):
         # initialize the camera and grab a reference to the raw camera capture
-        rawCapture = PiRGBArray(self.camera)
+    #    rawCapture = PiRGBArray(self.camera)
         # allow the camera to warmup
         #time.sleep(0.1)
         # grab an image from the camera
         # print("Capturing Image...")
-        try:
-            self.camera.capture(rawCapture, format="bgr")
-            image = rawCapture.array
-            return image
-        except:
-            print("Failed to capture")
-            return -1
+     #   try:
+      #      self.camera.capture(rawCapture, format="bgr")
+       #     image = rawCapture.array
+        #    return image
+        #except:
+         #   print("Failed to capture")
+          #  return -1
             # display the image on screen and wait for a keypress
         # The above code was given to us from the professors of SEED Lab
-
+    def VideoCapture(self):
+        rawCapture = PiRGBArray(self.camera, size=(640, 480))
+        image = self.camera.array
+        return image
     def convertToGray(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return gray
         # This function when called converts the image from the BGR color space to Grayscale, need to do this because
         # an image is way too big to process if it is in the BGR color space.
 
-    def resize(self, gray):
-        resizeImg = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-        return resizeImg
+    #def resize(self, gray):
+     #   resizeImg = cv2.resize(gray, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+      #  return resizeImg
         # This function takes the large grayscale image and scales down by half
 
     def arucoDetect(self, resize, showImage=False):
