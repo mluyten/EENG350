@@ -102,7 +102,7 @@ void loop() {
 
 void receiveData() {
   data[0] = Serial.read();
-  if (data[0] > 1) {
+  if (data[0] > 2) {
     for (i = 1; i < 6; i++) {
       while (Serial.available() == 0);
       data[i] = Serial.read();
@@ -113,23 +113,36 @@ void receiveData() {
     moveRobot(0, 3.14159*2, 18, 0.4);
     if (done == false)
       moveRobot(0, 3.14159*2, 18, 0.3);
-    done = false;
-  }
-  
-  else if (data[0] == 2) {
-    float angleCmd = (float)data[3] + (float)(data[4]) / 256;
-    angleCmd = 3.14159 * angleCmd / 180
-    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
-    moveRobot(0, angleCmd, 20, 5);
-    moveRobot(distanceCmd, 0, 20, 5);
+    done = true;
   }
   
   else if (data[0] == 3) {
-    float angleCmd = 0.0 - ((float)data[3] + (float)(data[4]) / 256);
+    float angleCmd = (float)data[3] + (float)(data[4]) / 256;
+    angleCmd = 3.14159 * angleCmd / 180;
     float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
     moveRobot(0, angleCmd, 20, 5);
     moveRobot(distanceCmd, 0, 20, 5);
+    Serial.write(1);
   }
+  
+  else if (data[0] == 4) {
+    float angleCmd = 0.0 - ((float)data[3] + (float)(data[4]) / 256);
+    angleCmd = 3.14159 * angleCmd / 180;
+    Serial.println(angleCmd);
+    float distanceCmd = (float)data[1] + (float)(data[2]) / 256;
+    Serial.println(distanceCmd);
+    moveRobot(0, angleCmd, 20, 5);
+    moveRobot(distanceCmd, 0, 20, 5);
+    Serial.write(1);
+  }
+
+  else if (data[0] == 2) {
+    driveCircle();
+    if (done == false)
+      driveCircle();
+    done = true;
+  }
+  
   
   analogWrite(m1SpeedPin, 0);
   analogWrite(m2SpeedPin, 0);

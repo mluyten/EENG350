@@ -40,53 +40,70 @@ def navigate():
     beaconData = cam.getAngleAndDistance()
     if beaconData != -1:
         return beaconData
-
-try:
+    
+def getTangentCommand(data):
     radius = 12
-    while True:
-        command = input("Action Menu:\n1 - Final Demo\n2 - Quit\n")
-        if command == "1":
-            ser.write(struct.pack('B', 1))
-            scan()
-            ser.write(struct.pack('B', 0))
+    b = abs(data[0])
+    a = abs(data[1])
+    theta = abs(data[2])
+    print(a,b)
+    d = np.sqrt(np.power(a, 2) + np.power(b, 2))
+    driveDistance = np.sqrt(np.power(d, 2) - np.power(radius, 2))
+    direction = None
+    
+    if theta > 0:
+        if a < radius:
+            angle = (math.atan(radius/driveDistance) - theta) * 180 / 3.14159
+            direction = 4
+        
+        elif a > radius:
+            angle = (theta - math.atan(radius/driveDistance)) * 180 / 3.14159
+            direction = 3
+            
+    if theta < 0:
+        angle = (math.atan(radius/driveDistance) + theta) * 180 / 3.14159
+        direction = 4
+        
+    print(angle, driveDistance, direction)
+            
+    return [struct.pack('B', direction), struct.pack('B', np.uint8(driveDistance)),
+                     struct.pack('B', np.uint8(driveDistance * 256)), struct.pack('B', np.uint8(angle)),
+                     struct.pack('B', np.uint8(angle * 256)), struct.pack('B', 0)]
+
+#try:
+radius = 12
+while True:
+    command = input("Action Menu:\n1 - Final Demo\n2 - Quit\n")
+    if command == "1":        
+        ser.write(struct.pack('B', 1))
+        scan()
+        ser.write(struct.pack('B', 0))
+        count = 1
+        
+        while count < 3:
             data = navigate()
             while data == -1:
                 data = navigate()
-                
-            b = abs(data[0])
-            a = abs(data[1])
-            theta abs(data[2])
-            d = sqrt(np.pow(a, 2), np.pow(b, 2))
-            driveDistance = sqrt(np.pow(d, 2), np.pow(radius, 2))
-            direction = None
-            
-            if theta > 0:
-                if a < radius:
-                    angle = (math.asin(radius/driveDistance) - theta) * 180 / 3.14159
-                    direction = 2
-                
-                elif a > radius:
-                    angle = (theta - math.asin(radius/driveDistance)) * 180 / 3.14159
-                    direction = 3
-                    
-            if theta < 0:
-                angle = (math.asin(radius/driveDistance) + theta) * 180 / 3.14159
-                direction = 2
-                    
-            
-            sendArray = [struct.pack('B', direction), struct.pack('B', np.uint8(driveDistance)),
-                             struct.pack('B', np.uint8(driveDistance*256)), struct.pack('B', np.uint8(angle)),
-                             struct.pack('B', np.uint8(angle*256)), struct.pack('B', 0)]
-            
+            sendArray = getTangentCommand(data)
             for byte in sendArray:
                 ser.write(byte)
-            print("Sent")
+            ser.reset_input_buffer()
+            while ser.in_waiting == 0:
+                pass
+            ser.reset_input_buffer()
+                
+            ser.write(struct.pack('B', 2))
+            scan()
+            ser.write(struct.pack('B', 0))
+            
+            count += 1
+            
 
-        elif command == "2":
-            break;
+    elif command == "2":
+        break;
 
-        else:
-            print("Error: Command Not Recognized")
-except:
-    ser.close()
-    print("Done! Closed Serial")
+    else:
+        print("Error: Command Not Recognized")
+#except:
+    #ser.close()
+    #print("Done! Closed Serial")

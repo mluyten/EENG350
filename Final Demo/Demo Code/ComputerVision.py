@@ -33,21 +33,12 @@ class ComputerVision():
             
     def stopCapture(self):
         self.runCapture = False;
-        
-    def VideoCapture(self):
-        rawCapture = PiRGBArray(self.camera, size=(640, 480))
-        image = self.camera.array
-        return image
-    def convertToGray(self, image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        return gray
 
-    def arucoDetect(self, resize, showImage=False):
-        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
-        image = resize
+    def arucoDetect(self, image, showImage=False):
         
         # verify that the supplied ArUCo tag exists and is supported by
         # OpenCV
+        arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
         arucoParams = cv2.aruco.DetectorParameters_create()
         (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict,
                                                            parameters=arucoParams)
@@ -75,12 +66,16 @@ class ComputerVision():
             focalLength = 912.916 #Value found expiermentally 
             arucoHeight = 100  # in mm
             pixelHeight = ((topRight[1] - bottomRight[1]) + (topLeft[1] - bottomLeft[1])) / 2 #Take average of the top two corners just so it gets the average height
-            realDistance = 0.0393701*focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
+            realDistance = focalLength * arucoHeight / pixelHeight #finds the distance based on the math that Cam showed us
             if cX < w/2:
                 width = realDistance * ((w / 2) - cX) / focalLength
+                width = 0.0393701 * width
+                realDistance = 0.0393701 * realDistance
                 return [realDistance, width, -math.atan(width / realDistance)]
             else:
                 width = realDistance * (cX - (w / 2)) / focalLength
+                width = 0.0393701 * width
+                realDistance = 0.0393701 * realDistance
                 return [realDistance, width, math.atan(width / realDistance)]
         else:
             return -1
@@ -96,7 +91,7 @@ class ComputerVision():
     # quadrant the image is in.
 
     def getAngleAndDistance(self):
-        return self.arucoDetect(self.convertToGray(self.VideoCapture()))
+        return self.arucoDetect(self.image)
         #return self.arucoDetect(self.resize(self.convertToGray(self.takeImage())))
         # This function is the one that is called within the file that communicates with the Arduino. It is kinda messy so I have set it up so the call is easy
         # within the greater function of the project.

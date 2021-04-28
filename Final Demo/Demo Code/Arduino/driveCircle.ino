@@ -1,5 +1,4 @@
 void driveCircle() {
-  
   clearControlVariables();
   KpRotational = 0.08;
   KiRotational = 0.8;
