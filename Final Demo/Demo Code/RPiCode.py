@@ -43,7 +43,7 @@ def navigate():
     
 def getTangentCommand(data):
     radius = 12
-    b = abs(data[0])
+    b = 0.658 * abs(data[0]) + 0.422
     a = abs(data[1])
     theta = abs(data[2])
     print(a,b)
