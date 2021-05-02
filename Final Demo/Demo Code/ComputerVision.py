@@ -42,7 +42,7 @@ class ComputerVision():
         arucoParams = cv2.aruco.DetectorParameters_create()
         (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict,
                                                            parameters=arucoParams)
-        if ids != None:
+        if ids.all() != None:
             # verify *at least* one ArUco marker was detected
             if len(corners) > 0:
                 # flatten the ArUco IDs list
@@ -71,12 +71,12 @@ class ComputerVision():
                 width = realDistance * ((w / 2) - cX) / focalLength
                 width = 0.0393701 * width
                 realDistance = 0.0393701 * realDistance
-                return [realDistance, width, -math.atan(width / realDistance)]
+                return [realDistance, width, -1]
             else:
                 width = realDistance * (cX - (w / 2)) / focalLength
                 width = 0.0393701 * width
                 realDistance = 0.0393701 * realDistance
-                return [realDistance, width, math.atan(width / realDistance)]
+                return [realDistance, width, 1]
         else:
             return -1
     # There is a lot of comments that live within this function already, but I would like to expand on that.
@@ -117,6 +117,12 @@ class ComputerVision():
         # OpenCV
         arucoParams = cv2.aruco.DetectorParameters_create()
         (corners, ids, rejected) = cv2.aruco.detectMarkers(self.image, arucoDict,
-                                                           parameters=arucoParams)
-        return ids != None
+                                                          parameters=arucoParams)
         
+        try:
+            for id in ids:
+                if id >= 0 and id < 8:
+                    return True
+            return False
+        except:
+            return False

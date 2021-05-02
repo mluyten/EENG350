@@ -42,29 +42,30 @@ def navigate():
         return beaconData
     
 def getTangentCommand(data):
-    radius = 12
-    b = 0.658 * abs(data[0]) + 0.422
+    radius = 14
+    b = 0.658 * abs(data[0])
     a = abs(data[1])
-    theta = abs(data[2])
-    print(a,b)
+    theta = math.atan(a/b) * data[2]
     d = np.sqrt(np.power(a, 2) + np.power(b, 2))
+    if radius > d:
+        return reverseAndTryAgain
     driveDistance = np.sqrt(np.power(d, 2) - np.power(radius, 2))
     direction = None
     
     if theta > 0:
-        if a < radius:
-            angle = (math.atan(radius/driveDistance) - theta) * 180 / 3.14159
-            direction = 4
-        
-        elif a > radius:
-            angle = (theta - math.atan(radius/driveDistance)) * 180 / 3.14159
-            direction = 3
-            
-    if theta < 0:
         angle = (math.atan(radius/driveDistance) + theta) * 180 / 3.14159
         direction = 4
+            
+    elif theta < 0:
+        if a < radius:
+            angle = (math.atan(radius/driveDistance) - abs(theta)) * 180 / 3.14159
+            direction = 4
+            print("LEFT")
+        elif a > radius:
+            angle = (abs(theta) - math.atan(radius/driveDistance)) * 180 / 3.14159
+            direction = 3
         
-    print(angle, driveDistance, direction)
+    print(theta * 180 / 3.14159, angle, driveDistance, a, b, direction)
             
     return [struct.pack('B', direction), struct.pack('B', np.uint8(driveDistance)),
                      struct.pack('B', np.uint8(driveDistance * 256)), struct.pack('B', np.uint8(angle)),
@@ -100,7 +101,7 @@ while True:
             
 
     elif command == "2":
-        break;
+        break
 
     else:
         print("Error: Command Not Recognized")
