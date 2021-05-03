@@ -42,7 +42,7 @@ def navigate():
         return beaconData
     
 def getTangentCommand(data):
-    radius = 14
+    radius = 20
     b = 0.658 * abs(data[0])
     a = abs(data[1])
     theta = math.atan(a/b) * data[2]
@@ -54,16 +54,16 @@ def getTangentCommand(data):
     
     if theta > 0:
         angle = (math.atan(radius/driveDistance) + theta) * 180 / 3.14159
-        direction = 4
+        direction = 5
             
     elif theta < 0:
         if a < radius:
             angle = (math.atan(radius/driveDistance) - abs(theta)) * 180 / 3.14159
-            direction = 4
+            direction = 5
             print("LEFT")
         elif a > radius:
             angle = (abs(theta) - math.atan(radius/driveDistance)) * 180 / 3.14159
-            direction = 3
+            direction = 4
         
     print(theta * 180 / 3.14159, angle, driveDistance, a, b, direction)
             
@@ -81,7 +81,7 @@ while True:
         ser.write(struct.pack('B', 0))
         count = 1
         
-        while count < 3:
+        while count < 8:
             data = navigate()
             while data == -1:
                 data = navigate()
@@ -92,13 +92,16 @@ while True:
             while ser.in_waiting == 0:
                 pass
             ser.reset_input_buffer()
+            
+            if count == 7:
+                ser.write(struct.pack('B', 3))
+                break
                 
             ser.write(struct.pack('B', 2))
             scan()
             ser.write(struct.pack('B', 0))
             
             count += 1
-            
 
     elif command == "2":
         break

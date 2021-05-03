@@ -1,4 +1,4 @@
-void driveCircle() {
+void driveCircle(int counts) {
   clearControlVariables();
   KpRotational = 0.08;
   KiRotational = 0.8;
@@ -9,7 +9,9 @@ void driveCircle() {
   myEnc1.write(0);
   myEnc2.write(0);
 
-  while (thetaCurrent1 < 23256) {
+  // Full Circle: 23256
+
+  while (thetaCurrent1 < counts) {
   // Robot Receives a Stop Command ------------------------------------------------------------------------------------------------------------
     if ((Serial.available() > 0) && (Serial.read() == 0)) {
       analogWrite(m1SpeedPin, 0);
@@ -48,8 +50,11 @@ void driveCircle() {
       currentAngle = currentAngle + ( (double) radius * (deltaTheta1 - deltaTheta2) * 3.14159 / 3200.0 / wheelbase); // Updates the current angle of the robot in rad
     }
     
-    desiredForward = 21.36;
-    desiredRotational = 1.257;
+    //desiredForward = 5.76;//faster value -> 21.36;
+    //desiredRotational = 0.5236;//faster value -> 1.257;
+
+    desiredForward = 13.35;//faster value -> 21.36;
+    desiredRotational = 0.7854;//faster value -> 1.257;
 
   // Inner Loop (Velocity Control)-----------------------------------------------------------------------------------------------------------------------
     deltaForward = desiredForward - forwardVelocity; // Forward velocity error ie difference (in in/s) between desired and actual forward velocity
