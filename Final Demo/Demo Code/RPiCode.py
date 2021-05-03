@@ -48,7 +48,7 @@ def getTangentCommand(data):
     theta = math.atan(a/b) * data[2]
     d = np.sqrt(np.power(a, 2) + np.power(b, 2))
     if radius > d:
-        return reverseAndTryAgain
+        return reverseAndTryAgain()
     driveDistance = np.sqrt(np.power(d, 2) - np.power(radius, 2))
     direction = None
     
@@ -70,6 +70,22 @@ def getTangentCommand(data):
     return [struct.pack('B', direction), struct.pack('B', np.uint8(driveDistance)),
                      struct.pack('B', np.uint8(driveDistance * 256)), struct.pack('B', np.uint8(angle)),
                      struct.pack('B', np.uint8(angle * 256)), struct.pack('B', 0)]
+
+def reverseAndTryAgain():
+    sendArray = [struct.pack('B', 6), struct.pack('B', np.uint8(10)),
+                     struct.pack('B', np.uint8(10 * 256)), struct.pack('B', np.uint8(0)),
+                     struct.pack('B', np.uint8(0 * 256)), struct.pack('B', 0)]
+    for byte in sendArray:
+        ser.write(byte)
+    ser.reset_input_buffer()
+    while ser.in_waiting == 0:
+        pass
+    ser.reset_input_buffer()
+    data = navigate()
+    while data == -1:
+        data = navigate()
+    sendArray = getTangentCommand(data)
+    return sendArray
 
 #try:
 radius = 12
