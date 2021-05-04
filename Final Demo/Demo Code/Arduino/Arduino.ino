@@ -2,9 +2,9 @@
 #include <Encoder.h>
 #include <Wire.h>
 
-/* Name: Group 6 | EENG350 | Demo 2 Arduino Code
+/* Name: Group 6 | EENG350 | Final Demo Arduino Code
 
-   Purpose: Drive in a circle
+   Purpose: Navigate a path around a set of Aruco markers without straying more than 1.5ft away from the beacons and ending at the starting location.
    
    Note: when viewed from the front, left wheel is 1, right wheel is 2. driveModePin is 4 on the motor shield, 5 on the Teensy
 */
